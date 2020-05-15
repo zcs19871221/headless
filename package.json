@@ -9,6 +9,7 @@
     "better-loger": "^1.0.8",
     "better-fs": "^11.0.4",
     "better-utils": "^3.0.4",
+    "pending-xhr-puppeteer": "^2.1.0",
     "puppeteer": "^3.0.4"
   },
   "bin": {
@@ -27,7 +28,6 @@
     "@types/node": "^13.13.5",
     "@types/puppeteer": "^2.1.0",
     "jest": "^25.5.4",
-    "pending-xhr-puppeteer": "^2.1.0",
     "prettier": "^1.19.1",
     "ts-jest": "^25.4.0",
     "typescript": "^3.7.5"
