@@ -15,11 +15,12 @@
     "deployNoah": "./noah/run.js"
   },
   "scripts": {
-    "analyze": "node --inspect=0.0.0.0:9229 dist/index.js",
     "compile": "tsc",
     "test": "jest",
     "watch": "tsc --watch",
-    "build": "node ./bin/clean.js && npm run compile && node ./bin/copyPkg.js"
+    "build": "node ./bin/clean.js && npm run compile && node ./bin/copyPkg.js",
+    "preversion": "npm run build",
+    "postversion": "node ./bin/copyPkg.js && cd dist && npm publish"
   },
   "devDependencies": {
     "@types/jest": "^25.2.1",
