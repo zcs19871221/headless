@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import deploy from '.';
+import deploy from './deploy';
 import * as fs from 'better-fs';
 import path from 'path';
 
@@ -16,8 +16,15 @@ const readOpenIdConfig = () => {
         .filter(each => each.trim())
         .forEach(each => {
           if (each.split('=').length === 2) {
-            const [key, value] = each.split('=');
-            config[key.trim()] = value.trim();
+            const key = each.split('=')[0];
+            let value: any = each.split('=')[1];
+            if (value === 'false') {
+              value = false;
+            }
+            if (value === 'true') {
+              value = true;
+            }
+            config[key.trim()] = value;
           }
         });
     }

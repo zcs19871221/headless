@@ -1,18 +1,18 @@
 {
-  "name": "headless",
+  "name": "better-headless",
   "version": "0.0.0",
   "description": "puppetter command",
   "main": "index.js",
   "author": "zcs",
   "license": "ISC",
   "dependencies": {
-    "better-loger": "^1.0.5",
+    "better-loger": "^1.0.8",
     "better-fs": "^11.0.4",
     "better-utils": "^3.0.4",
     "puppeteer": "^3.0.4"
   },
   "bin": {
-    "deploy": "run.js"
+    "deployNoah": "./noah/run.js"
   },
   "scripts": {
     "analyze": "node --inspect=0.0.0.0:9229 dist/index.js",
