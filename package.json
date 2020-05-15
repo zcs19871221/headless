@@ -1,0 +1,34 @@
+{
+  "name": "headless",
+  "version": "0.0.0",
+  "description": "puppetter command",
+  "main": "index.js",
+  "author": "zcs",
+  "license": "ISC",
+  "dependencies": {
+    "better-loger": "^1.0.5",
+    "better-fs": "^11.0.4",
+    "better-utils": "^3.0.4",
+    "puppeteer": "^3.0.4"
+  },
+  "bin": {
+    "deploy": "run.js"
+  },
+  "scripts": {
+    "analyze": "node --inspect=0.0.0.0:9229 dist/index.js",
+    "compile": "tsc",
+    "test": "jest",
+    "watch": "tsc --watch",
+    "build": "node ./bin/clean.js && npm run compile && node ./bin/copyPkg.js"
+  },
+  "devDependencies": {
+    "@types/jest": "^25.2.1",
+    "@types/node": "^13.13.5",
+    "@types/puppeteer": "^2.1.0",
+    "jest": "^25.5.4",
+    "pending-xhr-puppeteer": "^2.1.0",
+    "prettier": "^1.19.1",
+    "ts-jest": "^25.4.0",
+    "typescript": "^3.7.5"
+  }
+}
