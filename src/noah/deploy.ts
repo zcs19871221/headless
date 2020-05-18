@@ -3,7 +3,7 @@ import { wait } from 'better-utils';
 import Logger from 'better-loger';
 import ConsoleAppender from 'better-loger/console_appender';
 import loginAuthSystem from '../auth_system/login';
-import waitForAllRequest from '../utils/waitForAllRequest';
+import waitForAllRequest from '../utils/wait_for_all_request';
 
 const waitForClick = (page: Page, text: string, selector: string) => {
   return page.waitForFunction(
@@ -148,23 +148,21 @@ const main = async ({
     await (await page.waitForSelector(`span[title=${app}]`)).click();
     logger.debug('已经点击应用：' + app);
     await (await page.waitForSelector(`input[type=radio][value=all]`)).click();
-    logger.debug('已经点击环境全部');
     await Promise.all([
       waitForAllRequest(page),
       waitForClick(page, cluster, 'a'),
     ]);
     logger.debug('已经点击集群：' + cluster);
-    // const xhrWaitForBranch = new PendingXHR(page);
-    // await waitForClick(page, cluster, 'a');
-    // await xhrWaitForBranch.waitForAllXhrFinished();
-    // await wait(100);
     await waitForClick(page, '一键发布', 'span');
     logger.debug('已经点击一键发布');
-    await (
-      await page.waitForSelector(
-        'div[aria-label=发布] .el-form-item.is-required input',
-      )
-    ).type(branch);
+    await Promise.all([
+      waitForAllRequest(page),
+      (
+        await page.waitForSelector(
+          'div[aria-label=发布] .el-form-item.is-required input',
+        )
+      ).type(branch),
+    ]);
     logger.debug('已设置分支：' + branch);
     await (
       await page.waitForSelector(
