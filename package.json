@@ -9,7 +9,6 @@
     "better-loger": "^1.0.8",
     "better-fs": "^11.0.4",
     "better-utils": "^3.0.4",
-    "pending-xhr-puppeteer": "^2.1.0",
     "puppeteer": "^3.0.4"
   },
   "bin": {

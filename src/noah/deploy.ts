@@ -3,7 +3,7 @@ import { wait } from 'better-utils';
 import Logger from 'better-loger';
 import ConsoleAppender from 'better-loger/console_appender';
 import loginAuthSystem from '../auth_system/login';
-import { PendingXHR } from 'pending-xhr-puppeteer';
+import waitForAllRequest from '../utils/waitForAllRequest';
 
 const waitForClick = (page: Page, text: string, selector: string) => {
   return page.waitForFunction(
@@ -149,11 +149,15 @@ const main = async ({
     logger.debug('已经点击应用：' + app);
     await (await page.waitForSelector(`input[type=radio][value=all]`)).click();
     logger.debug('已经点击环境全部');
-    const xhrWaitForBranch = new PendingXHR(page);
-    await waitForClick(page, cluster, 'a');
+    await Promise.all([
+      waitForAllRequest(page),
+      waitForClick(page, cluster, 'a'),
+    ]);
     logger.debug('已经点击集群：' + cluster);
-    await xhrWaitForBranch.waitForAllXhrFinished();
-    await wait(100);
+    // const xhrWaitForBranch = new PendingXHR(page);
+    // await waitForClick(page, cluster, 'a');
+    // await xhrWaitForBranch.waitForAllXhrFinished();
+    // await wait(100);
     await waitForClick(page, '一键发布', 'span');
     logger.debug('已经点击一键发布');
     await (
@@ -167,12 +171,12 @@ const main = async ({
         'div[aria-label=发布] .el-button.el-button--primary',
       )
     ).click();
-    logger.debug('进入镜像选择');
-    const xhrWaitForBatchInfo = new PendingXHR(page);
-    await waitForClick(page, '下一步', 'div[aria-label=发布] span');
-    await xhrWaitForBatchInfo.waitForAllXhrFinished();
     logger.debug('进入发布模式选择');
-    await wait(100);
+    await Promise.all([
+      waitForAllRequest(page),
+      waitForClick(page, '下一步', 'div[aria-label=发布] span'),
+    ]);
+    logger.debug('进入发布策略选择');
     await waitForClick(page, '确 定', 'div[aria-label=发布] span');
     logger.debug('已点击发布');
     await wait(2000);
