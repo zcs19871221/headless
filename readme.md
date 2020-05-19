@@ -18,21 +18,23 @@
 
     文件内容如下格式:
 
-         app=xxxx
-         cluster=xxxxx
+         groupName=xx平台
+         app=cmshz-xxxx-xxxx
+         cluster=cmshz-article-xxxx-xx_test
          branch=dev
          user=bjxxxxx
          pwd=xxxxxx
          show=false
          debug=true
 
-    app-应用名  
-     cluster-集群名  
-     branch-分支  
-     user-用户名  
-     pwd-密码  
-     show-是否显示浏览器  
-     debug-是否显示  
+    groupName-产品名
+    app-应用名
+    cluster-集群名
+    branch-分支
+    user-用户名
+    pwd-密码
+    show-是否显示浏览器
+    debug-是否显示  
      debug 信息
 
 4.  最佳实践
