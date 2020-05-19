@@ -55,12 +55,10 @@ const main = async ({
   branch,
   user,
   pwd,
-  groupName,
   debug = true,
   show = false,
 }: {
   app: string;
-  groupName: string;
   cluster: string;
   user: string;
   pwd: string;
@@ -76,12 +74,7 @@ const main = async ({
     logger.setLevel('debug');
     logger.setAppender(new ConsoleAppender({ threshold: 'debug' }));
   }
-  logger.info('目标产品：%m\n目标应用：%m\n目标集群:%m\n目标分支:%m', [
-    groupName,
-    app,
-    cluster,
-    branch,
-  ]);
+  logger.info('目标应用：%m\n目标集群:%m\n目标分支:%m', [app, cluster, branch]);
   logger.debug(`用户名:${user} 密码:${pwd}`);
   const browser = await puppeteer.launch({
     headless: show ? false : true,
@@ -105,7 +98,7 @@ const main = async ({
       99,
       111,
       109,
-    ])}/#/poseidon/app/appDetail?appName=${app}&productName=${groupName}&appTab=cluster`;
+    ])}/#/poseidon/app/appDetail?appName=${app}&appTab=cluster`;
     await page.goto(url);
     logger.debug('已跳转到：' + url);
     await loginAuthSystem({
