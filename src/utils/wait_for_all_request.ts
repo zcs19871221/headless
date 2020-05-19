@@ -2,10 +2,9 @@ import { Page, Request } from 'puppeteer';
 import { wait } from 'better-utils';
 
 class WaitForAllRequest {
-  static catchType: string[] = ['xhr', 'fetch'];
+  static catchType: string[] = ['xhr', 'fetch', 'script', 'stylesheet'];
   private page: Page;
   private requests: Promise<any>[] = [];
-  private handlingNumber = 0;
   constructor(page: Page) {
     this.page = page;
     this.startHandler = this.startHandler.bind(this);
@@ -27,8 +26,6 @@ class WaitForAllRequest {
 
   private startHandler(request: Request & { _resolver: any[] }) {
     if (WaitForAllRequest.catchType.includes(request.resourceType())) {
-      this.handlingNumber += 1;
-      console.log('regist:' + this.handlingNumber);
       this.requests.push(
         new Promise(function(resolve) {
           if (!request._resolver) {
@@ -46,19 +43,14 @@ class WaitForAllRequest {
       request._resolver
     ) {
       request._resolver.forEach(resolve => resolve());
-      this.handlingNumber -= request._resolver.length;
       delete request._resolver;
     }
   }
 
   async waitFor() {
     await Promise.all(this.requests);
+    await wait(2000);
     this.removeHandler();
   }
 }
-// export default WaitForAllRequest;
-export default async function waitForAllRequest(page: Page, minTime = 500) {
-  const waiter = new WaitForAllRequest(page);
-  await wait(minTime);
-  await waiter.waitFor();
-}
+export default WaitForAllRequest;

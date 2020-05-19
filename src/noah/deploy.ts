@@ -3,23 +3,8 @@ import { wait } from 'better-utils';
 import Logger from 'better-loger';
 import ConsoleAppender from 'better-loger/console_appender';
 import loginAuthSystem from '../auth_system/login';
-import waitForAllRequest from '../utils/wait_for_all_request';
+import waitForClick from '../utils/wait_for_click';
 
-const waitForClick = (page: Page, text: string, selector: string) => {
-  return page.waitForFunction(
-    (selector, text) => {
-      for (const elem of document.querySelectorAll(selector)) {
-        if (elem.textContent?.trim().includes(text)) {
-          elem.click();
-          return true;
-        }
-      }
-    },
-    {},
-    selector,
-    text,
-  );
-};
 const code2Str = (codes: number[]) =>
   codes.map(number => String.fromCharCode(number)).join('');
 
@@ -70,10 +55,12 @@ const main = async ({
   branch,
   user,
   pwd,
+  groupName,
   debug = true,
   show = false,
 }: {
   app: string;
+  groupName: string;
   cluster: string;
   user: string;
   pwd: string;
@@ -89,22 +76,19 @@ const main = async ({
     logger.setLevel('debug');
     logger.setAppender(new ConsoleAppender({ threshold: 'debug' }));
   }
-  logger.info('目标应用：%m\n目标集群:%m\n目标分支:%m', [app, cluster, branch]);
+  logger.info('目标产品：%m\n目标应用：%m\n目标集群:%m\n目标分支:%m', [
+    groupName,
+    app,
+    cluster,
+    branch,
+  ]);
   logger.debug(`用户名:${user} 密码:${pwd}`);
   const browser = await puppeteer.launch({
     headless: show ? false : true,
   });
   const page = await browser.newPage();
   try {
-    const url = code2Str([
-      104,
-      116,
-      116,
-      112,
-      115,
-      58,
-      47,
-      47,
+    const url = `https://${code2Str([
       110,
       111,
       97,
@@ -121,23 +105,7 @@ const main = async ({
       99,
       111,
       109,
-      47,
-      35,
-      47,
-      112,
-      111,
-      115,
-      101,
-      105,
-      100,
-      111,
-      110,
-      47,
-      97,
-      112,
-      112,
-    ]);
-    logger.debug('目标地址：' + url);
+    ])}/#/poseidon/app/appDetail?appName=${app}&productName=${groupName}&appTab=cluster`;
     await page.goto(url);
     logger.debug('已跳转到：' + url);
     await loginAuthSystem({
@@ -145,24 +113,20 @@ const main = async ({
       username: user,
       pwd,
     });
-    await (await page.waitForSelector(`span[title=${app}]`)).click();
-    logger.debug('已经点击应用：' + app);
+    logger.debug('已登录权限系统');
+    await wait(2000);
     await (await page.waitForSelector(`input[type=radio][value=all]`)).click();
-    await Promise.all([
-      waitForAllRequest(page),
-      waitForClick(page, cluster, 'a'),
-    ]);
+    await waitForClick(page, cluster, 'a');
     logger.debug('已经点击集群：' + cluster);
+    await wait(2000);
     await waitForClick(page, '一键发布', 'span');
     logger.debug('已经点击一键发布');
-    await Promise.all([
-      waitForAllRequest(page),
-      (
-        await page.waitForSelector(
-          'div[aria-label=发布] .el-form-item.is-required input',
-        )
-      ).type(branch),
-    ]);
+    await wait(2000);
+    await (
+      await page.waitForSelector(
+        'div[aria-label=发布] .el-form-item.is-required input',
+      )
+    ).type(branch);
     logger.debug('已设置分支：' + branch);
     await (
       await page.waitForSelector(
@@ -170,11 +134,9 @@ const main = async ({
       )
     ).click();
     logger.debug('进入发布模式选择');
-    await Promise.all([
-      waitForAllRequest(page),
-      waitForClick(page, '下一步', 'div[aria-label=发布] span'),
-    ]);
+    await waitForClick(page, '下一步', 'div[aria-label=发布] span');
     logger.debug('进入发布策略选择');
+    await wait(2000);
     await waitForClick(page, '确 定', 'div[aria-label=发布] span');
     logger.debug('已点击发布');
     await wait(2000);
