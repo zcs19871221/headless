@@ -18,7 +18,6 @@
 
     文件内容如下格式:
 
-         groupName=xx平台
          app=cmshz-xxxx-xxxx
          cluster=cmshz-article-xxxx-xx_test
          branch=dev
@@ -27,26 +26,24 @@
          show=false
          debug=true
 
-    groupName-产品名
-    app-应用名
-    cluster-集群名
-    branch-分支
-    user-用户名
-    pwd-密码
-    show-是否显示浏览器
-    debug-是否显示  
-     debug 信息
+    app-应用名  
+    cluster-集群名  
+    branch-分支  
+    user-用户名  
+    pwd-密码  
+    show-是否显示浏览器  
+    debug-是否显示 debug 消息
 
 4.  最佳实践
 
-    用户密码写在.pwd 中 每人维护自己的 gitignore
+    用户密码写在`.pwd` 中 每人维护自己的 gitignore
 
-    不同环境写在不同文件中,比如 test1 test2 pre1 pre2 online 统一维护
+    不同环境配置写在不同文件中,比如 `.test .pre .online` 统一维护
 
-    package.json 中对应不同环境有不同的调用,比如:
+    package.json 中不同环境调用不同的配置文件,比如:
 
-        "t1": "deployNoah test1"
-        "t2": "deployNoah test2"
+        "test": "deployNoah .pwd .test"
+        "pre": "deployNoah .pwd .pre"
 
 ## node 程序
 
