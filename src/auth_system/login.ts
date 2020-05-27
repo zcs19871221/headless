@@ -1,4 +1,4 @@
-import { Page } from 'puppeteer';
+import { Page, Cookie } from 'puppeteer';
 import loginSelectors from './loginSelectors';
 
 export default async function login({
@@ -9,7 +9,7 @@ export default async function login({
   page: Page;
   username: string;
   pwd: string;
-}) {
+}): Promise<Cookie[]> {
   const loginSelector = await Promise.race(
     loginSelectors.map(each =>
       page.waitForSelector(each.accountSelector).then(() => each),
@@ -21,4 +21,5 @@ export default async function login({
     page.waitForNavigation(),
     await page.click(loginSelector.submitSelector),
   ]);
+  return await page.cookies();
 }

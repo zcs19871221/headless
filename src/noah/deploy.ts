@@ -49,6 +49,7 @@ const queryStatus = async (page: Page, logger: Logger) => {
     })();
   });
 };
+
 const main = async ({
   app,
   cluster,
@@ -119,7 +120,12 @@ const main = async ({
       await page.waitForSelector(
         'div[aria-label=发布] .el-form-item.is-required input',
       )
-    ).type(branch);
+    ).click();
+    try {
+      await waitForClick(page, branch, 'li', 500);
+    } catch (error) {
+      throw new Error(`分支${branch}不存在`);
+    }
     logger.debug('已设置分支：' + branch);
     await (
       await page.waitForSelector(
@@ -154,10 +160,13 @@ const main = async ({
       })
     ).jsonValue();
     logger.info(<any>detail);
+    await page.close();
+    await browser.close();
   } catch (error) {
     console.error(error);
-  } finally {
+    await page.close();
     await browser.close();
+    process.exit(1);
   }
 };
 export default main;
