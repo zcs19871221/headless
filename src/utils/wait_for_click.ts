@@ -9,7 +9,7 @@ const waitForClick = (
   return page.waitForFunction(
     (selector: string, text: string) => {
       for (const elem of document.querySelectorAll(selector)) {
-        if (elem.textContent?.trim().includes(text)) {
+        if (elem.textContent?.trim() === text) {
           (<HTMLElement>elem).click();
           return true;
         }
