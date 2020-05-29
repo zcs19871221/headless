@@ -1,37 +1,20 @@
 #!/usr/bin/env node
 import deploy from './deploy';
-import * as fs from 'better-fs';
 import path from 'path';
+import readConfigFile from '../utils/read_config_file';
+import * as defaultOpenId from './default_openId';
 
-const readOpenIdConfig = () => {
+(function runAtCmd() {
   const configLocates = process.argv
     .slice(2)
     .map(file => path.join(process.cwd(), file));
-  const config: any = {};
-  // const envNames = ['app', 'cluster', 'user', 'pwd', 'branch', 'debug', 'show'];
-  configLocates.forEach(configLocate => {
-    if (fs.existsSync(configLocate)) {
-      fs.readFileSync(configLocate, 'utf-8')
-        .split('\n')
-        .filter(each => each.trim())
-        .forEach(each => {
-          if (each.split('=').length === 2) {
-            const key = each.split('=')[0];
-            let value: any = each.split('=')[1];
-            if (value === 'false') {
-              value = false;
-            }
-            if (value === 'true') {
-              value = true;
-            }
-            config[key.trim()] = value;
-          }
-        });
-    }
-  });
-  deploy(config).catch(error => {
+  const config: any = readConfigFile(configLocates);
+  let defaultOpenIdConfig: any = {};
+  if (defaultOpenId.has()) {
+    defaultOpenIdConfig = defaultOpenId.read();
+  }
+  deploy({ ...defaultOpenIdConfig, ...config }).catch(error => {
     console.error(error);
   });
   return;
-};
-readOpenIdConfig();
+})();

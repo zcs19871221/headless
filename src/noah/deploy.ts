@@ -4,6 +4,7 @@ import Logger from 'better-loger';
 import ConsoleAppender from 'better-loger/console_appender';
 import loginAuthSystem from '../auth_system/login';
 import waitForClick from '../utils/wait_for_click';
+import getCurBranch from '../utils/get_cur_branch';
 
 const code2Str = (codes: number[]) =>
   codes.map(number => String.fromCharCode(number)).join('');
@@ -50,6 +51,15 @@ const queryStatus = async (page: Page, logger: Logger) => {
   });
 };
 
+interface DeployOption {
+  app: string;
+  cluster: string;
+  user: string;
+  pwd: string;
+  branch: string;
+  debug?: boolean;
+  show?: boolean;
+}
 const main = async ({
   app,
   cluster,
@@ -58,17 +68,12 @@ const main = async ({
   pwd,
   debug = true,
   show = false,
-}: {
-  app: string;
-  cluster: string;
-  user: string;
-  pwd: string;
-  branch: string;
-  debug?: boolean;
-  show?: boolean;
-}) => {
+}: DeployOption) => {
   if (!app || !cluster || !user || !pwd || !branch) {
     throw new Error('需要app,cluster,branch,user,pwd参数');
+  }
+  if (branch === 'HEAD') {
+    branch = await getCurBranch();
   }
   const logger = Logger.get();
   if (debug) {
@@ -169,4 +174,5 @@ const main = async ({
     process.exit(1);
   }
 };
+export { DeployOption };
 export default main;
