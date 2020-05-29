@@ -1,6 +1,6 @@
 {
   "name": "better-headless",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "puppetter command",
   "main": "index.js",
   "author": "zcs",
