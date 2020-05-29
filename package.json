@@ -13,7 +13,7 @@
   },
   "bin": {
     "deployNoah": "./noah/run.js",
-    "openid": "./noah/openid.js"
+    "openid": "./noah/set_openid.js"
   },
   "scripts": {
     "compile": "tsc",
