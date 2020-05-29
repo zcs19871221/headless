@@ -15,6 +15,6 @@ export function read() {
 }
 
 export function write(name: string, pwd: string, logger: Logger) {
-  const dest = writeFileSync(defaultOpenIdLocate, `user=${name}\npwd=${pwd}`);
-  logger.info(`opendId账号:${name} 密码:${pwd} 写入${dest}`);
+  writeFileSync(defaultOpenIdLocate, `user=${name}\npwd=${pwd}`);
+  logger.info(`opendId账号:${name} 密码:${pwd} 写入${defaultOpenIdLocate}`);
 }
