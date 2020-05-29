@@ -1,42 +1,45 @@
 # 部署 noah
 
+## 安装
+
+全局: `npm install -g better-headless`  
+当前目录: `npm install better-headless`
+
 ## 命令行
 
-1.  全局安装
+### deployNoah
 
-    `npm install -g better-headless`  
-    `deployNoah file1 [file2] [file3]`
+`deployNoah file1 [file2] [file3]`
 
-2.  目录安装
+`程序运行目录`作为根目录,依次去找 file1,file2,file3 的配置文件.读取文件中的配置.后面覆盖前面.配置文件格式如下
 
-    `npm install better-headless`  
-     在 package.json 中增加 script 命令:`"deploy": "deployNoah file1 [file2] [file3]"`
+    app=cmshz-xxxx-xxxx
+    cluster=cmshz-article-xxxx-xx_test
+    branch=dev
+    user=bjxxxxx
+    pwd=xxxxxx
+    show=false
+    debug=true
 
-3.  配置文件
+app-应用名  
+cluster-集群名  
+branch-分支  
+user-用户名  
+pwd-密码  
+show-是否显示浏览器  
+debug-是否显示 debug 消息
 
-    从参数中获取文件名 file1,file2,去运行根目录查找文件读取配置,后面覆盖前面
+branch 输入`HEAD`表示使用当前 git 分支
 
-    文件内容如下格式:
+### openid
 
-         app=cmshz-xxxx-xxxx
-         cluster=cmshz-article-xxxx-xx_test
-         branch=dev
-         user=bjxxxxx
-         pwd=xxxxxx
-         show=false
-         debug=true
+`openid username passwd`
 
-    app-应用名  
-    cluster-集群名  
-    branch-分支  
-    user-用户名  
-    pwd-密码  
-    show-是否显示浏览器  
-    debug-是否显示 debug 消息
+设置全局默认的账号密码.
 
-4.  最佳实践
+### 最佳实践
 
-    用户密码写在`.pwd` 中 每人维护自己的 gitignore
+    用户密码写在`.pwd` 中或通过openid命令进行全局设置
 
     不同环境配置写在不同文件中,比如 `.test .pre .online` 统一维护
 
@@ -45,7 +48,7 @@
         "test": "deployNoah .pwd .test"
         "pre": "deployNoah .pwd .pre"
 
-## node 程序
+## node 调用
 
     // commonjs module
     const { deployNoah } = require('better-headless')
