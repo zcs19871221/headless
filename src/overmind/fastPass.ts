@@ -2,10 +2,9 @@ import puppeteer, { Page } from 'puppeteer';
 import { wait } from 'better-utils';
 import Logger from 'better-loger';
 import ConsoleAppender from 'better-loger/console_appender';
-import Login from '../auth_system/login';
+import loginAuthSystem from '../auth_system/login';
 import waitForClick from '../utils/wait_for_click';
 import getCurBranch from '../utils/get_cur_branch';
-import ClickCluster from './click_cluster';
 
 const code2Str = (codes: number[]) =>
   codes.map(number => String.fromCharCode(number)).join('');
@@ -108,72 +107,17 @@ const main = async ({
     ])}/#/poseidon/app/appDetail?appName=${app}&appTab=cluster`;
     await page.goto(url);
     logger.debug('已跳转到：' + url);
-    const login = new Login({
+    await loginAuthSystem({
       page,
       username: user,
       pwd,
-      desc: '登录权限系统',
-      logger,
     });
-    await login.do();
-
-    const clickCluster = new ClickCluster({
-      page,
-      cluster,
-      desc: '点击集群' + cluster,
-      logger,
-    });
-    await clickCluster.do();
-
-    await waitForClick(page, '一键发布', 'span');
-    logger.debug('已经点击一键发布');
-    await wait(2000);
-    await (
-      await page.waitForSelector(
-        'div[aria-label=发布] .el-form-item.is-required input',
-      )
-    ).click();
-    try {
-      await waitForClick(page, branch, 'li', 500);
-    } catch (error) {
-      throw new Error(`分支${branch}不存在`);
-    }
-    logger.debug('已设置分支：' + branch);
-    await (
-      await page.waitForSelector(
-        'div[aria-label=发布] .el-button.el-button--primary',
-      )
-    ).click();
-    logger.debug('进入发布模式选择');
-    await waitForClick(page, '下一步', 'div[aria-label=发布] span');
-    logger.debug('进入发布策略选择');
-    await wait(2000);
-    await waitForClick(page, '确 定', 'div[aria-label=发布] span');
-    logger.debug('已点击发布');
-    await wait(10000);
-    logger.debug('查询发布状态');
-    await queryStatus(page, logger);
-    logger.debug('发布结束');
-    const detail = await (
-      await page.waitForFunction(() => {
-        const detailElement = document.querySelectorAll(
-          '.cluster-detail-info-box td',
-        );
-        if (detailElement.length > 0) {
-          let res = '\n';
-          for (const td of detailElement) {
-            if (td.textContent?.includes('完成时间')) {
-              continue;
-            }
-            res += td.textContent?.replace(/[\s\n]/g, '') + '\n';
-          }
-          return res;
-        }
-      })
-    ).jsonValue();
-    logger.info(<any>detail);
-    await page.close();
-    await browser.close();
+    logger.debug('已登录权限系统');
+    await waitForClick(page, '不通过 >', '.rejected,.clickable');
+    await waitForClick(page, '修改个人检查结果', 'span');
+    await waitForClick(page, '无需检查', 'span');
+    await waitForClick(page, '保 存', 'button');
+    await waitForClick(page, '保 存', '.u-mgl10,.pass');
   } catch (error) {
     console.error(error);
     await page.close();

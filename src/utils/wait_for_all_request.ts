@@ -1,15 +1,22 @@
 import { Page, Request } from 'puppeteer';
-import { wait } from 'better-utils';
 
 class WaitForAllRequest {
   static catchType: string[] = ['xhr', 'fetch', 'script', 'stylesheet'];
   private page: Page;
-  private requests: Promise<any>[] = [];
-  constructor(page: Page) {
+  private id: number = 0;
+  private finishCount: number = 0;
+  private targetNumber: number;
+  private promise: Promise<any>;
+  private resolve!: (value?: any) => void;
+  constructor(page: Page, targetNumber: number) {
     this.page = page;
+    this.targetNumber = targetNumber;
     this.startHandler = this.startHandler.bind(this);
     this.finishHandler = this.finishHandler.bind(this);
     this.regist();
+    this.promise = new Promise(resolve => {
+      this.resolve = resolve;
+    });
   }
 
   private regist() {
@@ -18,39 +25,28 @@ class WaitForAllRequest {
     this.page.on('requestfailed', <any>this.finishHandler);
   }
 
-  private removeHandler() {
-    this.page.removeListener('request', <any>this.startHandler);
-    this.page.removeListener('requestfinished', <any>this.finishHandler);
-    this.page.removeListener('requestfailed', <any>this.finishHandler);
-  }
-
-  private startHandler(request: Request & { _resolver: any[] }) {
+  private startHandler(request: Request & { _rid: number }) {
     if (WaitForAllRequest.catchType.includes(request.resourceType())) {
-      this.requests.push(
-        new Promise(function(resolve) {
-          if (!request._resolver) {
-            request._resolver = [];
-          }
-          request._resolver.push(resolve);
-        }),
-      );
+      request._rid = this.id++;
     }
   }
 
-  private finishHandler(request: Request & { _resolver: any[] }) {
+  private finishHandler(request: Request & { _rid: number }) {
     if (
       WaitForAllRequest.catchType.includes(request.resourceType()) &&
-      request._resolver
+      request._rid &&
+      request._rid <= this.id
     ) {
-      request._resolver.forEach(resolve => resolve());
-      delete request._resolver;
+      delete request._rid;
+      this.finishCount++;
+      if (this.finishCount === this.targetNumber) {
+        this.resolve();
+      }
     }
   }
 
-  async waitFor() {
-    await Promise.all(this.requests);
-    await wait(2000);
-    this.removeHandler();
+  wait() {
+    return this.promise;
   }
 }
 export default WaitForAllRequest;

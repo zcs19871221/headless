@@ -2,10 +2,9 @@ import puppeteer, { Page } from 'puppeteer';
 import { wait } from 'better-utils';
 import Logger from 'better-loger';
 import ConsoleAppender from 'better-loger/console_appender';
-import Login from '../auth_system/login';
+import loginAuthSystem from '../auth_system/login';
 import waitForClick from '../utils/wait_for_click';
 import getCurBranch from '../utils/get_cur_branch';
-import ClickCluster from './click_cluster';
 
 const code2Str = (codes: number[]) =>
   codes.map(number => String.fromCharCode(number)).join('');
@@ -108,23 +107,17 @@ const main = async ({
     ])}/#/poseidon/app/appDetail?appName=${app}&appTab=cluster`;
     await page.goto(url);
     logger.debug('已跳转到：' + url);
-    const login = new Login({
+    await loginAuthSystem({
       page,
       username: user,
       pwd,
-      desc: '登录权限系统',
-      logger,
     });
-    await login.do();
-
-    const clickCluster = new ClickCluster({
-      page,
-      cluster,
-      desc: '点击集群' + cluster,
-      logger,
-    });
-    await clickCluster.do();
-
+    logger.debug('已登录权限系统');
+    await wait(2000);
+    await (await page.waitForSelector(`input[type=radio][value=all]`)).click();
+    await waitForClick(page, cluster, 'a');
+    logger.debug('已经点击集群：' + cluster);
+    await wait(2000);
     await waitForClick(page, '一键发布', 'span');
     logger.debug('已经点击一键发布');
     await wait(2000);
