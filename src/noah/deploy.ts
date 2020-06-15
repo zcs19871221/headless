@@ -15,7 +15,7 @@ const queryStatus = async (page: Page, logger: Logger) => {
     (async function() {
       const timeout = setTimeout(() => {
         reject(new Error('部署超时'));
-      }, 10 * 60 * 1000);
+      }, 15 * 60 * 1000);
       try {
         let curStatus = '';
         let prevStatus = '';
@@ -34,6 +34,9 @@ const queryStatus = async (page: Page, logger: Logger) => {
               },
             )
           ).jsonValue());
+          try {
+            await waitForClick(page, '继续下一批', 'span', 1000);
+          } catch (error) {}
           if (curStatus !== prevStatus) {
             prevStatus = curStatus;
             logger.info(curStatus);
@@ -127,7 +130,7 @@ const main = async ({
 
     await waitForClick(page, '一键发布', 'span');
     logger.debug('已经点击一键发布');
-    await wait(2000);
+    await wait(3000);
     await (
       await page.waitForSelector(
         'div[aria-label=发布] .el-form-item.is-required input',
