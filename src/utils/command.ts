@@ -37,7 +37,7 @@ export default abstract class Command {
 
   async do() {
     return new Promise((resolve, reject) => {
-      this.logger.debug(`开始执行：${this.desc}`);
+      this.logger.debug(`\n开始执行：${this.desc}`);
       const timer = setTimeout(() => {
         reject();
       }, this.timeout);

@@ -1,4 +1,3 @@
-import { ensureDo } from 'better-utils';
 import loginSelectors from './loginSelectors';
 import Command, { CommandOption } from '../utils/command';
 
@@ -31,9 +30,8 @@ export default class Login extends Command {
         page.waitForSelector(each.accountSelector).then(() => each),
       ),
     );
-    const ensureType = ensureDo(page.type);
-    await ensureType(loginSelector.accountSelector, this.username);
-    await ensureType(loginSelector.pwdSelector, this.pwd);
+    await page.type(loginSelector.accountSelector, this.username);
+    await page.type(loginSelector.pwdSelector, this.pwd);
     await Promise.all([
       page.waitForNavigation(),
       await page.click(loginSelector.submitSelector),
