@@ -43,7 +43,7 @@ export default abstract class Command {
       }, this.timeout);
       this._do()
         .then(value => {
-          this.logger.info(`成功执行：${this.desc}`);
+          this.logger.debug(`成功执行：${this.desc}`);
           resolve(value);
         })
         .catch(error => {
@@ -70,6 +70,9 @@ export default abstract class Command {
         await this._execute();
       } catch (error) {
         if (this.executeTime < this.timeout) {
+          this.logger.debug(
+            `执行：${this.desc}失败 等待${this.retryInterval}后执行重试`,
+          );
           await wait(this.retryInterval);
           await this.undo();
         }
