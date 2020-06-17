@@ -12,7 +12,7 @@ interface CommandOption {
 }
 export { CommandOption };
 export default abstract class Command {
-  private logger: Logger;
+  protected logger: Logger;
   protected page: Page;
   private desc: string;
   private timeout: number;
@@ -25,7 +25,7 @@ export default abstract class Command {
     desc,
     retry = 1,
     timeout = 10 * 1000,
-    retryInterval = 50,
+    retryInterval = 100,
   }: CommandOption) {
     this.logger = logger;
     this.page = page;
@@ -43,7 +43,7 @@ export default abstract class Command {
       }, this.timeout);
       this._do()
         .then(value => {
-          this.logger.debug(`成功执行：${this.desc}`);
+          this.logger.info(`成功执行：${this.desc}`);
           resolve(value);
         })
         .catch(error => {
@@ -60,7 +60,9 @@ export default abstract class Command {
   }
 
   abstract async _execute(): Promise<any>;
-  async undo(): Promise<any> {}
+  async undo(): Promise<any> {
+    return this._execute();
+  }
 
   private async _do() {
     while (this.executeTime++ < this.retry) {
@@ -68,8 +70,8 @@ export default abstract class Command {
         await this._execute();
       } catch (error) {
         if (this.executeTime < this.timeout) {
-          await this.undo();
           await wait(this.retryInterval);
+          await this.undo();
         }
       }
     }

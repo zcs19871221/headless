@@ -1,59 +1,20 @@
-import puppeteer, { Page } from 'puppeteer';
-import { wait } from 'better-utils';
+import puppeteer from 'puppeteer';
 import Logger from 'better-loger';
 import ConsoleAppender from 'better-loger/console_appender';
 import Login from '../auth_system/login';
-import waitForClick from '../utils/wait_for_click';
 import getCurBranch from '../utils/get_cur_branch';
 import ClickCluster from './click_cluster';
+import ClickOneKeyPublish from './click_one_key_publish';
+import ChoseBranch from './chose_branch';
+import ClickNext from './click_next';
+import ChoseStopMode, { StopMode } from './chose_stopMode';
+import ClickEnsure from './click_ensure';
+import QueryPublishStatus from './query_publish_status';
+import QueryPublishResult from './query_publish_result';
+import Command from 'src/utils/command';
 
 const code2Str = (codes: number[]) =>
   codes.map(number => String.fromCharCode(number)).join('');
-
-const queryStatus = async (page: Page, logger: Logger) => {
-  return new Promise((resolve, reject) => {
-    (async function() {
-      const timeout = setTimeout(() => {
-        reject(new Error('部署超时'));
-      }, 15 * 60 * 1000);
-      try {
-        let curStatus = '';
-        let prevStatus = '';
-        const finalStatus = ['正常运行'];
-        while (true) {
-          curStatus = await (<any>(
-            await page.waitForFunction(
-              () => {
-                const status = document.querySelectorAll(
-                  '.cluster-status,.processing',
-                )[1]?.textContent;
-                return status;
-              },
-              {
-                timeout: 10 * 60 * 1000,
-              },
-            )
-          ).jsonValue());
-          try {
-            await waitForClick(page, '继续下一批', 'span', 1000);
-          } catch (error) {}
-          if (curStatus !== prevStatus) {
-            prevStatus = curStatus;
-            logger.info(curStatus);
-          }
-          if (finalStatus.includes(curStatus)) {
-            break;
-          }
-        }
-        clearTimeout(timeout);
-        resolve();
-      } catch (error) {
-        clearTimeout(timeout);
-        reject(error);
-      }
-    })();
-  });
-};
 
 interface DeployOption {
   app: string;
@@ -63,6 +24,7 @@ interface DeployOption {
   branch: string;
   debug?: boolean;
   show?: boolean;
+  mode?: keyof typeof StopMode;
 }
 const main = async ({
   app,
@@ -72,6 +34,7 @@ const main = async ({
   pwd,
   debug = true,
   show = false,
+  mode = '不暂停',
 }: DeployOption) => {
   if (!app || !cluster || !user || !pwd || !branch) {
     throw new Error('需要app,cluster,branch,user,pwd参数');
@@ -109,76 +72,54 @@ const main = async ({
       111,
       109,
     ])}/#/poseidon/app/appDetail?appName=${app}&appTab=cluster`;
-    await page.goto(url);
-    logger.debug('已跳转到：' + url);
-    const login = new Login({
-      page,
-      username: user,
-      pwd,
-      desc: '登录权限系统',
-      logger,
-    });
-    await login.do();
-
-    const clickCluster = new ClickCluster({
-      page,
-      cluster,
-      desc: '点击集群' + cluster,
-      logger,
-    });
-    await clickCluster.do();
-
-    await waitForClick(page, '一键发布', 'span');
-    logger.debug('已经点击一键发布');
-    await wait(3000);
-    await (
-      await page.waitForSelector(
-        'div[aria-label=发布] .el-form-item.is-required input',
-      )
-    ).click();
-    try {
-      await waitForClick(page, branch, 'li', 500);
-    } catch (error) {
-      throw new Error(`分支${branch}不存在`);
+    const commands: Command[] = [
+      new Login({
+        url,
+        page,
+        username: user,
+        pwd,
+        logger,
+      }),
+      new ClickCluster({
+        page,
+        cluster,
+        logger,
+      }),
+      new ClickOneKeyPublish({ page, logger }),
+      new ChoseBranch({ page, logger, branch }),
+      new ClickNext({
+        page,
+        logger,
+      }),
+      new ClickNext({
+        page,
+        logger,
+      }),
+      new ChoseStopMode({
+        page,
+        logger,
+        mode,
+      }),
+      new ClickEnsure({
+        page,
+        logger,
+      }),
+      new QueryPublishStatus({
+        page,
+        logger,
+      }),
+      new QueryPublishResult({
+        page,
+        logger,
+      }),
+    ];
+    for (const command of commands) {
+      await command.do();
     }
-    logger.debug('已设置分支：' + branch);
-    await (
-      await page.waitForSelector(
-        'div[aria-label=发布] .el-button.el-button--primary',
-      )
-    ).click();
-    logger.debug('进入发布模式选择');
-    await waitForClick(page, '下一步', 'div[aria-label=发布] span');
-    logger.debug('进入发布策略选择');
-    await wait(2000);
-    await waitForClick(page, '确 定', 'div[aria-label=发布] span');
-    logger.debug('已点击发布');
-    await wait(10000);
-    logger.debug('查询发布状态');
-    await queryStatus(page, logger);
-    logger.debug('发布结束');
-    const detail = await (
-      await page.waitForFunction(() => {
-        const detailElement = document.querySelectorAll(
-          '.cluster-detail-info-box td',
-        );
-        if (detailElement.length > 0) {
-          let res = '\n';
-          for (const td of detailElement) {
-            if (td.textContent?.includes('完成时间')) {
-              continue;
-            }
-            res += td.textContent?.replace(/[\s\n]/g, '') + '\n';
-          }
-          return res;
-        }
-      })
-    ).jsonValue();
-    logger.info(<any>detail);
     await page.close();
     await browser.close();
   } catch (error) {
-    console.error(error);
+    logger.error(error);
     await page.close();
     await browser.close();
     process.exit(1);
