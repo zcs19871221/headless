@@ -32,7 +32,7 @@ interface DeployOption {
 const main = async ({
   app,
   cluster,
-  branch,
+  branch = 'HEAD',
   user,
   pwd,
   debug = true,
@@ -40,8 +40,8 @@ const main = async ({
   stop = 'no',
   test = false,
 }: DeployOption) => {
-  if (!app || !cluster || !user || !pwd || !branch) {
-    throw new Error('需要app,cluster,branch,user,pwd参数');
+  if (!app || !cluster || !user || !pwd) {
+    throw new Error('需要app,cluster,user,pwd参数');
   }
   if (branch === 'HEAD') {
     branch = await getCurBranch();
