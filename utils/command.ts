@@ -24,7 +24,7 @@ export default abstract class Command {
     logger,
     desc,
     retry = 1,
-    timeout = 10 * 1000,
+    timeout = 0,
     retryInterval = 100,
   }: CommandOption) {
     this.logger = logger;
@@ -38,9 +38,12 @@ export default abstract class Command {
   async do() {
     return new Promise((resolve, reject) => {
       this.logger.debug(`\n开始执行：${this.desc}`);
-      const timer = setTimeout(() => {
-        reject();
-      }, this.timeout);
+      const timer =
+        this.timeout > 0
+          ? setTimeout(() => {
+              reject();
+            }, this.timeout)
+          : null;
       this._do()
         .then(value => {
           this.logger.debug(`成功执行：${this.desc}`);

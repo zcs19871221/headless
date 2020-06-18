@@ -12,6 +12,5 @@
     "strict": true,
     "baseUrl": "./"
   },
-  "exclude": ["**/*.test.ts", "dist"],
-  "include": ["src/**/*", "test/**/*"]
+  "exclude": ["**/*.test.ts", "dist"]
 }

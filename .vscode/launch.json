@@ -23,7 +23,7 @@
       "type": "node",
       "request": "launch",
       "name": "ts server",
-      "program": "${workspaceFolder}/src/index.ts",
+      "program": "${workspaceFolder}/index.ts",
       "preLaunchTask": "compile",
       "outFiles": ["${workspaceFolder}/dist/**/*.js"],
       "env": {

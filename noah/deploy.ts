@@ -11,7 +11,7 @@ import ChoseStopMode, { StopMode } from './chose_stopMode';
 import ClickEnsure from './click_ensure';
 import QueryPublishStatus from './query_publish_status';
 import QueryPublishResult from './query_publish_result';
-import Command from 'src/utils/command';
+import Command from '../utils/command';
 
 const code2Str = (codes: number[]) =>
   codes.map(number => String.fromCharCode(number)).join('');
@@ -51,6 +51,7 @@ const main = async ({
   logger.debug(`用户名:${user} 密码:${pwd}`);
   const browser = await puppeteer.launch({
     headless: show ? false : true,
+    ignoreHTTPSErrors: true,
   });
   const page = await browser.newPage();
   try {
