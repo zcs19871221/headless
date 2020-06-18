@@ -3,15 +3,17 @@ import Logger from 'better-loger';
 import ConsoleAppender from 'better-loger/console_appender';
 import Login from '../auth_system/login';
 import getCurBranch from '../utils/get_cur_branch';
+import ClickAllButton from './click_cluster_all_button';
 import ClickCluster from './click_cluster';
 import ClickOneKeyPublish from './click_one_key_publish';
+import ClickBranch from './click_branch';
 import ChoseBranch from './chose_branch';
 import ClickNext from './click_next';
 import ChoseStopMode, { StopMode } from './chose_stopMode';
 import ClickEnsure from './click_ensure';
 import QueryPublishStatus from './query_publish_status';
 import QueryPublishResult from './query_publish_result';
-import Command from '../utils/command';
+import { commandRunner } from '../utils/command';
 
 const code2Str = (codes: number[]) =>
   codes.map(number => String.fromCharCode(number)).join('');
@@ -24,7 +26,8 @@ interface DeployOption {
   branch: string;
   debug?: boolean;
   show?: boolean;
-  mode?: keyof typeof StopMode;
+  test?: boolean;
+  stop?: keyof typeof StopMode;
 }
 const main = async ({
   app,
@@ -34,7 +37,8 @@ const main = async ({
   pwd,
   debug = true,
   show = false,
-  mode = '不暂停',
+  stop = 'no',
+  test = false,
 }: DeployOption) => {
   if (!app || !cluster || !user || !pwd || !branch) {
     throw new Error('需要app,cluster,branch,user,pwd参数');
@@ -42,6 +46,7 @@ const main = async ({
   if (branch === 'HEAD') {
     branch = await getCurBranch();
   }
+
   const logger = Logger.get();
   if (debug) {
     logger.setLevel('debug');
@@ -54,6 +59,15 @@ const main = async ({
     ignoreHTTPSErrors: true,
   });
   const page = await browser.newPage();
+  if (test) {
+    const client = await page.target().createCDPSession();
+    await client.send('Network.emulateNetworkConditions', {
+      offline: false,
+      downloadThroughput: (750 * 1024) / 8,
+      uploadThroughput: (250 * 1024) / 8,
+      latency: 50,
+    });
+  }
   try {
     const url = `https://${code2Str([
       110,
@@ -73,55 +87,59 @@ const main = async ({
       111,
       109,
     ])}/#/poseidon/app/appDetail?appName=${app}&appTab=cluster`;
-    const commands: Command[] = [
-      new Login({
-        url,
-        page,
-        username: user,
-        pwd,
-        logger,
-      }),
-      new ClickCluster({
-        page,
-        cluster,
-        logger,
-      }),
-      new ClickOneKeyPublish({ page, logger }),
-      new ChoseBranch({ page, logger, branch }),
-      new ClickNext({
-        page,
-        logger,
-      }),
-      new ClickNext({
-        page,
-        logger,
-      }),
-      new ChoseStopMode({
-        page,
-        logger,
-        mode,
-      }),
-      new ClickEnsure({
-        page,
-        logger,
-      }),
-      new QueryPublishStatus({
-        page,
-        logger,
-      }),
-      new QueryPublishResult({
-        page,
-        logger,
-      }),
-    ];
-    for (const command of commands) {
-      await command.do();
-    }
-    await page.close();
+    await commandRunner(
+      [
+        new Login({
+          url,
+          page,
+          username: user,
+          pwd,
+          logger,
+          timeout: 60 * 1000,
+        }),
+        new ClickAllButton({
+          page,
+          logger,
+        }),
+        new ClickCluster({
+          page,
+          cluster,
+          logger,
+        }),
+        new ClickOneKeyPublish({ page, logger }),
+        new ClickBranch({ page, logger }),
+        new ChoseBranch({ page, logger, branch }),
+        new ClickNext({
+          page,
+          logger,
+        }),
+        new ClickNext({
+          page,
+          logger,
+        }),
+        new ChoseStopMode({
+          page,
+          logger,
+          stop,
+        }),
+        new ClickEnsure({
+          page,
+          logger,
+        }),
+        new QueryPublishStatus({
+          page,
+          logger,
+        }),
+        new QueryPublishResult({
+          page,
+          logger,
+        }),
+      ],
+      logger,
+    );
     await browser.close();
   } catch (error) {
     logger.error(error);
-    await page.close();
     await browser.close();
     process.exit(1);
   }

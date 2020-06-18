@@ -1,4 +1,5 @@
 import Command, { CommandOption } from '../utils/command';
+import { wait } from 'better-utils';
 
 export default class QueryPublishStatus extends Command {
   constructor({ ...rest }: Omit<CommandOption, 'desc'>) {
@@ -7,6 +8,7 @@ export default class QueryPublishStatus extends Command {
 
   async _execute() {
     const { page, logger } = this;
+    await wait(20 * 1000);
     return new Promise((resolve, reject) => {
       (async function() {
         const timeout = setTimeout(() => {

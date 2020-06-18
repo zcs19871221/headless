@@ -1,4 +1,5 @@
 import Command, { CommandOption } from '../utils/command';
+import waitForClick from '../utils/wait_for_click';
 
 export default class ClickNext extends Command {
   constructor(obj: Omit<CommandOption, 'desc'>) {
@@ -6,10 +7,10 @@ export default class ClickNext extends Command {
   }
 
   async _execute() {
-    await (
-      await this.page.waitForSelector(
-        'div[aria-label=发布] .el-button.el-button--primary',
-      )
-    ).click();
+    await waitForClick(
+      this.page,
+      '下一步',
+      'div[aria-label=发布] .el-button.el-button--primary',
+    );
   }
 }

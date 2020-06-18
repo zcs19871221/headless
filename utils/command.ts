@@ -6,80 +6,100 @@ interface CommandOption {
   page: Page;
   logger: Logger;
   desc: string;
-  retry?: number;
   timeout?: number;
   retryInterval?: number;
 }
 export { CommandOption };
+const commandRunner = async (commands: Command[], logger: Logger) => {
+  for (let i = 0, len = commands.length; i < len; i++) {
+    const command = commands[i];
+    try {
+      await command.check();
+    } catch (error) {
+      if (commands[i - 1]) {
+        commands[i - 1].setIsRollBack();
+        logger.debug(
+          `${command.desc}检查失败,准备回滚到${commands[i - 1].desc}..`,
+        );
+        try {
+          await command.rollBack();
+        } catch (error) {
+          logger.debug(`执行：${command.desc} 回滚失败`);
+        }
+      }
+      i -= 2;
+      continue;
+    }
+    await command.do();
+  }
+};
+export { commandRunner };
 export default abstract class Command {
   protected logger: Logger;
   protected page: Page;
-  private desc: string;
+  public desc: string;
   private timeout: number;
-  private retry: number;
   private retryInterval: number;
-  private executeTime: number = 0;
+  private executeCounts: number = 0;
+  private isRollBack: boolean = false;
   constructor({
     page,
     logger,
     desc,
-    retry = 1,
-    timeout = 0,
-    retryInterval = 100,
+    retryInterval = 1000,
+    timeout = 30 * 1000,
   }: CommandOption) {
     this.logger = logger;
     this.page = page;
     this.desc = desc;
     this.timeout = timeout;
-    this.retry = retry;
     this.retryInterval = retryInterval;
   }
 
+  setIsRollBack() {
+    this.isRollBack = true;
+  }
+
   async do() {
+    this.executeCounts = 0;
+    const prefix = this.isRollBack ? '回滚重试' : '';
+    if (this.isRollBack) {
+      await wait(this.retryInterval);
+    }
     return new Promise((resolve, reject) => {
-      this.logger.debug(`\n开始执行：${this.desc}`);
-      const timer =
-        this.timeout > 0
-          ? setTimeout(() => {
-              reject();
-            }, this.timeout)
-          : null;
+      this.logger.debug(prefix + this.desc + '...');
       this._do()
         .then(value => {
-          this.logger.debug(`成功执行：${this.desc}`);
+          this.logger.debug(prefix + this.desc + '成功!');
           resolve(value);
         })
         .catch(error => {
-          this.page
-            .screenshot({ path: `${this.desc}`, type: 'jpeg' })
-            .finally(() => {
-              reject(error);
-            });
-        })
-        .finally(() => {
-          clearTimeout(timer);
+          reject(error);
         });
     });
   }
 
   abstract async _execute(): Promise<any>;
-  async undo(): Promise<any> {
-    return this._execute();
-  }
+
+  async rollBack(): Promise<any> {}
+  async check(): Promise<any> {}
 
   private async _do() {
-    while (this.executeTime++ < this.retry) {
+    const start = Date.now();
+    let lastError = null;
+    while (Date.now() - start <= this.timeout) {
       try {
-        await this._execute();
+        this.executeCounts++;
+        lastError = null;
+        return await this._execute();
       } catch (error) {
-        if (this.executeTime < this.timeout) {
-          this.logger.debug(
-            `执行：${this.desc}失败 等待${this.retryInterval}后执行重试`,
-          );
-          await wait(this.retryInterval);
-          await this.undo();
-        }
+        lastError = error;
+        this.logger.debug(
+          `${this.desc}失败 等待${this.retryInterval}后重试第${this.executeCounts}次`,
+        );
+        await wait(this.retryInterval);
       }
     }
+    throw lastError || new Error(`${this.desc}超时`);
   }
 }

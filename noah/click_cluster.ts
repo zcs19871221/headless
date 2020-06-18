@@ -1,5 +1,6 @@
 import Command, { CommandOption } from '../utils/command';
 import waitForClick from '../utils/wait_for_click';
+import waitUnitAppear from '../utils/wait_until_appear';
 
 export default class ClickCluster extends Command {
   private cluster: string;
@@ -12,9 +13,10 @@ export default class ClickCluster extends Command {
   }
 
   async _execute() {
-    await (
-      await this.page.waitForSelector(`input[type=radio][value=all]`)
-    ).click();
     await waitForClick(this.page, this.cluster, 'a');
+  }
+
+  async check() {
+    await waitUnitAppear(this.page, this.cluster, 'a', 500);
   }
 }

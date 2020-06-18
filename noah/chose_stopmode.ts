@@ -1,23 +1,24 @@
 import Command, { CommandOption } from '../utils/command';
 import waitForClick from '../utils/wait_for_click';
 
-enum StopMode {
-  '第一批暂停',
-  '每批暂停',
-  '不暂停',
-}
+const StopMode = {
+  first: '第一批暂停',
+  each: '每批暂停',
+  no: '不暂停',
+};
+
 export { StopMode };
 export default class ChoseStopMode extends Command {
-  private mode: keyof typeof StopMode;
+  private stop: keyof typeof StopMode;
   constructor({
-    mode,
+    stop,
     ...rest
-  }: Omit<CommandOption, 'desc'> & { mode: keyof typeof StopMode }) {
-    super({ ...rest, desc: '选择分支' });
-    this.mode = mode;
+  }: Omit<CommandOption, 'desc'> & { stop: keyof typeof StopMode }) {
+    super({ ...rest, desc: '选择暂停策略' });
+    this.stop = stop;
   }
 
   async _execute() {
-    await waitForClick(this.page, this.mode, '.el-radio__label');
+    await waitForClick(this.page, StopMode[this.stop], '.el-radio__label');
   }
 }

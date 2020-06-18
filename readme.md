@@ -20,16 +20,18 @@
     pwd=xxxxxx
     show=false
     debug=true
+    stop=no
 
-app-应用名  
-cluster-集群名  
-branch-分支  
-user-用户名  
-pwd-密码  
-show-是否显示浏览器  
-debug-是否显示 debug 消息
-
-branch 输入`HEAD`表示使用当前 git 分支
+| 名称    | 必须 | 描述                                            | 默认  |
+| ------- | ---- | ----------------------------------------------- | ----- |
+| app     | 是   | 应用                                            |       |
+| cluster | 是   | 集群                                            |       |
+| user    | 是   | 用户名                                          |       |
+| pwd     | 是   | 密码                                            |       |
+| branch  | 否   | 分支 HEAD 表示当前 git 分支                     | HEAD  |
+| show    | 否   | 是否显示浏览器操作过程                          | false |
+| debug   | 否   | 是否显示 debug 信息                             | true  |
+| stop    | 否   | 暂停模式三选一 first-第一批 each-每批 no-不暂停 | stop  |
 
 ### openid
 
@@ -41,7 +43,7 @@ branch 输入`HEAD`表示使用当前 git 分支
 
     用户密码写在`.pwd` 中或通过openid命令进行全局设置
 
-    不同环境配置写在不同文件中,比如 `.test .pre .online` 统一维护
+    不同环境配置写在不同文件中,比如 .test .pre .online 统一维护
 
     package.json 中不同环境调用不同的配置文件,比如:
 
@@ -55,6 +57,6 @@ branch 输入`HEAD`表示使用当前 git 分支
     // es6 module
     import { deployNoah } from 'better-headless'
 
-    deployNoah({app,cluster,branch,user,pwd,show,debug}).then(xxx => xxx).catch(error => {
+    deployNoah({app,cluster,branch,user,pwd,show,debug,stop}).then(xxx => xxx).catch(error => {
       console.error(error)
     })

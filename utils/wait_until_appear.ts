@@ -1,6 +1,6 @@
 import { Page } from 'puppeteer';
 
-const waitForClick = (
+const waitUntilAppear = (
   page: Page,
   text: string,
   selector: string,
@@ -10,7 +10,6 @@ const waitForClick = (
     (selector: string, text: string) => {
       for (const elem of document.querySelectorAll(selector)) {
         if (elem.textContent?.trim() === text) {
-          (<HTMLElement>elem).click();
           return true;
         }
       }
@@ -22,4 +21,4 @@ const waitForClick = (
     text,
   );
 };
-export default waitForClick;
+export default waitUntilAppear;

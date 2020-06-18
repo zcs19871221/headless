@@ -33,7 +33,7 @@ export default class Login extends Command {
     await page.type(loginSelector.accountSelector, this.username);
     await page.type(loginSelector.pwdSelector, this.pwd);
     await Promise.all([
-      page.waitForNavigation({ timeout: 60 * 1000 }),
+      page.waitForNavigation({ timeout: 30 * 1000 }),
       page.click(loginSelector.submitSelector),
     ]);
   }

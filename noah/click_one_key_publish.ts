@@ -9,9 +9,4 @@ export default class ClickOneKeyPublish extends Command {
   async _execute() {
     await waitForClick(this.page, '一键发布', 'span');
   }
-
-  async undo() {
-    await this.page.click('[aria-label=发布] [aria-label=Close]');
-    return this._execute();
-  }
 }
