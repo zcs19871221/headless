@@ -1,6 +1,8 @@
 import Command, { CommandOption } from '../utils/command';
 import { wait } from 'better-utils';
+import { Resource } from 'better-inject';
 
+@Resource({ id: 'status', parent: 'command' })
 export default class QueryPublishStatus extends Command {
   constructor({ ...rest }: Omit<CommandOption, 'desc'>) {
     super({ ...rest, desc: '查询发布状态' });

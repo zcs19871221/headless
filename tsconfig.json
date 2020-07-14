@@ -4,13 +4,16 @@
     "module": "CommonJS",
     "moduleResolution": "Node",
     "outDir": "dist",
+    "sourceMap": false,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
     "strict": true,
     "declaration": true,
     "baseUrl": "./"
   },
-  "exclude": ["**/*.test.ts", "dist", "test/**/*.ts"]
+  "exclude": ["**/*.test.ts", "dist"]
 }

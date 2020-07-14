@@ -1,6 +1,7 @@
 import Command, { CommandOption } from '../utils/command';
 import waitForClick from '../utils/wait_for_click';
-
+import { Resource } from 'better-inject';
+@Resource({ id: 'next', parent: 'command' })
 export default class ClickNext extends Command {
   constructor(obj: Omit<CommandOption, 'desc'>) {
     super({ ...obj, desc: '点击下一步' });

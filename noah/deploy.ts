@@ -1,6 +1,5 @@
-import puppeteer from 'puppeteer';
 import Logger from 'better-loger';
-import ConsoleAppender from 'better-loger/console_appender';
+import { Context } from 'better-inject';
 import Login from '../auth_system/login';
 import getCurBranch from '../utils/get_cur_branch';
 import ClickAllButton from './click_cluster_all_button';
@@ -13,17 +12,15 @@ import ChoseStopMode, { StopMode } from './chose_stopMode';
 import ClickEnsure from './click_ensure';
 import QueryPublishStatus from './query_publish_status';
 import QueryPublishResult from './query_publish_result';
+import PageFactory from './page_factory';
 import { commandRunner } from '../utils/command';
-
-const code2Str = (codes: number[]) =>
-  codes.map(number => String.fromCharCode(number)).join('');
 
 interface DeployOption {
   app: string;
   cluster: string;
   user: string;
   pwd: string;
-  branch: string;
+  branch?: string;
   debug?: boolean;
   show?: boolean;
   test?: boolean;
@@ -46,21 +43,20 @@ const main = async ({
   if (branch === 'HEAD') {
     branch = await getCurBranch();
   }
-
-  const logger = Logger.get();
-  if (debug) {
-    logger.setLevel('debug');
-    logger.setAppender(new ConsoleAppender({ threshold: 'debug' }));
-  }
+  const context = new Context({
+    configFiles: 'noah/config.ts',
+    scanFiles: ['noah/*.ts', 'auth_system/login.ts'],
+  });
+  const logger = <Logger>context.getBean('logger', debug);
   logger.info('目标应用：%m\n目标集群:%m\n目标分支:%m', [app, cluster, branch]);
   logger.debug(`用户名:${user} 密码:${pwd}`);
-  const browser = await puppeteer.launch({
-    headless: show ? false : true,
-    ignoreHTTPSErrors: true,
-  });
-  const page = await browser.newPage();
+  const pageFactory = <PageFactory>context.getBean('&page', show);
+  await pageFactory.init();
   if (test) {
-    const client = await page.target().createCDPSession();
+    const client = await pageFactory
+      .getPage()
+      .target()
+      .createCDPSession();
     await client.send('Network.emulateNetworkConditions', {
       offline: false,
       downloadThroughput: (750 * 1024) / 8,
@@ -69,78 +65,18 @@ const main = async ({
     });
   }
   try {
-    const url = `https://${code2Str([
-      110,
-      111,
-      97,
-      104,
-      46,
-      110,
-      101,
-      116,
-      101,
-      97,
-      115,
-      101,
-      46,
-      99,
-      111,
-      109,
-    ])}/#/poseidon/app/appDetail?appName=${app}&appTab=cluster`;
     await commandRunner(
-      [
-        new Login({
-          url,
-          page,
+      [<Login>context.getBean('login', {
           username: user,
           pwd,
-          logger,
-          timeout: 60 * 1000,
-        }),
-        new ClickAllButton({
-          page,
-          logger,
-        }),
-        new ClickCluster({
-          page,
-          cluster,
-          logger,
-        }),
-        new ClickOneKeyPublish({ page, logger }),
-        new ClickBranch({ page, logger }),
-        new ChoseBranch({ page, logger, branch }),
-        new ClickNext({
-          page,
-          logger,
-        }),
-        new ClickNext({
-          page,
-          logger,
-        }),
-        new ChoseStopMode({
-          page,
-          logger,
-          stop,
-        }),
-        new ClickEnsure({
-          page,
-          logger,
-        }),
-        new QueryPublishStatus({
-          page,
-          logger,
-        }),
-        new QueryPublishResult({
-          page,
-          logger,
-        }),
-      ],
+          app,
+        }), <ClickAllButton>context.getBean('clickAll'), <ClickCluster>context.getBean('clickCluster', { cluster }), <ClickOneKeyPublish>context.getBean('oneKey'), <ClickBranch>context.getBean('branch'), <ChoseBranch>context.getBean('choseBranch', { branch }), <ClickNext>context.getBean('next'), <ClickNext>context.getBean('next'), <ChoseStopMode>context.getBean('stop', { stop }), <ClickEnsure>context.getBean('ensure'), <QueryPublishStatus>context.getBean('status'), <QueryPublishResult>context.getBean('result')],
       logger,
     );
-    await browser.close();
+    await pageFactory.closeBrowser();
   } catch (error) {
-    logger.error(error);
-    await browser.close();
+    logger.error('', error);
+    await pageFactory.closeBrowser();
     process.exit(1);
   }
 };

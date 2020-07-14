@@ -1,5 +1,6 @@
 import Command, { CommandOption } from '../utils/command';
 import waitForClick from '../utils/wait_for_click';
+import { Resource } from 'better-inject';
 
 const StopMode = {
   first: '第一批暂停',
@@ -8,6 +9,7 @@ const StopMode = {
 };
 
 export { StopMode };
+@Resource({ id: 'stop', parent: 'command' })
 export default class ChoseStopMode extends Command {
   private stop: keyof typeof StopMode;
   constructor({

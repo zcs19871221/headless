@@ -1,5 +1,7 @@
 import Command, { CommandOption } from '../utils/command';
+import { Resource } from 'better-inject';
 
+@Resource({ id: 'branch', parent: 'command' })
 export default class CLickBranch extends Command {
   private fromSelector: string = 'div[aria-label=发布] ';
   private inputSelector: string = '.el-form-item.is-required input';

@@ -1,7 +1,9 @@
 import Command, { CommandOption } from '../utils/command';
 import waitForClick from '../utils/wait_for_click';
 import waitUnitAppear from '../utils/wait_until_appear';
+import { Resource } from 'better-inject';
 
+@Resource({ id: 'clickCluster', parent: 'command' })
 export default class ClickCluster extends Command {
   private cluster: string;
   constructor({

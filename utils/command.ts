@@ -50,7 +50,7 @@ export default abstract class Command {
     timeout = 30 * 1000,
   }: CommandOption) {
     this.logger = logger;
-    this.page = page;
+    this.page = (<any>page).getPage();
     this.desc = desc;
     this.timeout = timeout;
     this.retryInterval = retryInterval;
@@ -79,7 +79,7 @@ export default abstract class Command {
     });
   }
 
-  abstract async _execute(): Promise<any>;
+  protected abstract async _execute(): Promise<any>;
 
   async rollBack(): Promise<any> {}
   async check(): Promise<any> {}

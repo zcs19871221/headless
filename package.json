@@ -7,13 +7,14 @@
   "license": "ISC",
   "dependencies": {
     "better-fs": "^11.0.4",
+    "better-inject": "^1.2.0",
     "better-loger": "^1.0.8",
     "better-utils": "^3.0.5",
     "puppeteer": "^3.0.4"
   },
   "bin": {
-    "deployNoah": "./noah/run.js",
-    "openid": "./noah/set_openid.js"
+    "deployNoah": "./noah/bin/run.js",
+    "openid": "./noah/bin/set_openid.js"
   },
   "scripts": {
     "compile": "tsc",

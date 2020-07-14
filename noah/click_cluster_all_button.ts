@@ -1,6 +1,7 @@
 import Command, { CommandOption } from '../utils/command';
-// import waitForClick from '../utils/wait_for_click';
+import { Resource } from 'better-inject';
 
+@Resource({ id: 'clickAll', parent: 'command' })
 export default class ClickCluster extends Command {
   constructor({ ...rest }: Omit<CommandOption, 'desc'>) {
     super({ ...rest, desc: '点击集群全部按钮' });

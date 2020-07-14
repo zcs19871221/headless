@@ -1,8 +1,8 @@
 #!/usr/bin/env node
-import deploy from './deploy';
+import deploy from '../deploy';
 import path from 'path';
-import readConfigFile from '../utils/read_config_file';
-import * as defaultOpenId from './default_openId';
+import readConfigFile from '../../utils/read_config_file';
+import * as defaultOpenId from '../default_openId';
 
 (function runAtCmd() {
   const configLocates = process.argv

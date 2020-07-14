@@ -1,5 +1,5 @@
 interface LoginSelector {
-  urlMatcher: string;
+  urlMatcher: string | RegExp;
   accountSelector: string;
   pwdSelector: string;
   submitSelector: string;
@@ -28,6 +28,12 @@ const config: LoginSelector[] = [
     accountSelector: '#corp_id_for_corpid',
     pwdSelector: '#corp_id_for_corppw',
     submitSelector: '#corp button[type=submit]',
+  },
+  {
+    urlMatcher: /(https:\/\/mp\.163\.com\/login\.html)|(http:\/\/.+?\.dy\.163\.com\/login\.html)/,
+    accountSelector: '#login-form #account-box input',
+    pwdSelector: '#login-form input[name=password]',
+    submitSelector: '#login-form #dologin',
   },
 ];
 export default config;
