@@ -12,7 +12,7 @@ import ChoseStopMode, { StopMode } from './chose_stopMode';
 import ClickEnsure from './click_ensure';
 import QueryPublishStatus from './query_publish_status';
 import QueryPublishResult from './query_publish_result';
-import PageFactory from './page_factory';
+import PageFactory from '../utils/page_factory';
 import { commandRunner } from '../utils/command';
 
 interface DeployOption {
@@ -26,6 +26,9 @@ interface DeployOption {
   test?: boolean;
   stop?: keyof typeof StopMode;
 }
+const code2Str = (codes: number[]) => {
+  return codes.map(number => String.fromCharCode(number)).join('');
+};
 const main = async ({
   app,
   cluster,
@@ -69,7 +72,24 @@ const main = async ({
       [<Login>context.getBean('login', {
           username: user,
           pwd,
-          app,
+          url: `https://${code2Str([
+            110,
+            111,
+            97,
+            104,
+            46,
+            110,
+            101,
+            116,
+            101,
+            97,
+            115,
+            101,
+            46,
+            99,
+            111,
+            109,
+          ])}/#/poseidon/app/appDetail?appName=${app}&appTab=cluster`,
         }), <ClickAllButton>context.getBean('clickAll'), <ClickCluster>context.getBean('clickCluster', { cluster }), <ClickOneKeyPublish>context.getBean('oneKey'), <ClickBranch>context.getBean('branch'), <ChoseBranch>context.getBean('choseBranch', { branch }), <ClickNext>context.getBean('next'), <ClickNext>context.getBean('next'), <ChoseStopMode>context.getBean('stop', { stop }), <ClickEnsure>context.getBean('ensure'), <QueryPublishStatus>context.getBean('status'), <QueryPublishResult>context.getBean('result')],
       logger,
     );

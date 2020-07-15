@@ -7,7 +7,7 @@
   "license": "ISC",
   "dependencies": {
     "better-fs": "^11.0.4",
-    "better-inject": "^1.2.0",
+    "better-inject": "^1.2.1",
     "better-loger": "^1.0.8",
     "better-utils": "^3.0.5",
     "puppeteer": "^3.0.4"

@@ -5,7 +5,7 @@ import { Resource } from 'better-inject';
 type LoginOption = Omit<CommandOption, 'desc'> & {
   username: string;
   pwd: string;
-  app: string;
+  url: string;
 };
 export { LoginOption };
 @Resource({ parent: 'command' })
@@ -13,32 +13,11 @@ export default class Login extends Command {
   private username: string;
   private pwd: string;
   private url: string;
-  constructor({ username, pwd, app, ...rest }: LoginOption) {
+  constructor({ username, pwd, url, ...rest }: LoginOption) {
     super({ ...rest, desc: '登录权限系统' });
     this.username = username;
     this.pwd = pwd;
-    this.url = `https://${Login.code2Str([
-      110,
-      111,
-      97,
-      104,
-      46,
-      110,
-      101,
-      116,
-      101,
-      97,
-      115,
-      101,
-      46,
-      99,
-      111,
-      109,
-    ])}/#/poseidon/app/appDetail?appName=${app}&appTab=cluster`;
-  }
-
-  private static code2Str(codes: number[]) {
-    return codes.map(number => String.fromCharCode(number)).join('');
+    this.url = url;
   }
 
   protected async _execute() {

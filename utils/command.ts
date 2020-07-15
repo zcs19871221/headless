@@ -1,9 +1,10 @@
 import Logger from 'better-loger';
 import { wait } from 'better-utils';
+import PageFactory from './page_factory';
 import { Page } from 'puppeteer';
 
 interface CommandOption {
-  page: Page;
+  page: PageFactory;
   logger: Logger;
   desc: string;
   timeout?: number;
@@ -50,7 +51,7 @@ export default abstract class Command {
     timeout = 30 * 1000,
   }: CommandOption) {
     this.logger = logger;
-    this.page = (<any>page).getPage();
+    this.page = page.getPage();
     this.desc = desc;
     this.timeout = timeout;
     this.retryInterval = retryInterval;

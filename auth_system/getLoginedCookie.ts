@@ -1,30 +1,37 @@
-import puppeteer from 'puppeteer';
 import Logger from 'better-loger';
-import ConsoleAppender from 'better-loger/console_appender';
 import Login, { LoginOption } from './login';
+import Context from 'better-inject';
+import PageFactory from 'utils/page_factory';
 
 export default async function getLoginedCookie({
   headless,
   debug,
   ...loginOpt
 }: Omit<LoginOption, 'page' | 'logger'> & {
-  headless: boolean;
-  debug: boolean;
+  headless?: boolean;
+  debug?: boolean;
 }) {
-  const browser = await puppeteer.launch({
-    headless,
-    ignoreHTTPSErrors: true,
+  const context = new Context({
+    scanFiles: ['utils/*_factory.ts', 'auth_system/login.ts'],
+    configFiles: 'auth_system/config.ts',
   });
-  const page = await browser.newPage();
-  const logger = Logger.get();
+  const { username, url, pwd, timeout, retryInterval } = loginOpt;
+  const logger = <Logger>context.getBean('logger', debug);
+  const pageFactory = <PageFactory>context.getBean('&page');
+  await pageFactory.init();
   try {
-    if (debug) {
-      logger.setLevel('debug');
-      logger.setAppender(new ConsoleAppender({ threshold: 'debug' }));
-    }
-    const login = new Login({ ...loginOpt, page, logger });
+    const login = <Login>context.getBean('login', {
+      username,
+      pwd,
+      url,
+      timeout,
+      retryInterval,
+    });
     await login.do();
-    const client = await page.target().createCDPSession();
+    const client = await pageFactory
+      .getPage()
+      .target()
+      .createCDPSession();
     const allCookies: any = await client.send('Network.getAllCookies');
     return allCookies.cookies
       .reduce((acc: string[], cur: { value: string; name: string }) => {
@@ -35,7 +42,6 @@ export default async function getLoginedCookie({
   } catch (error) {
     logger.error('获取cookie出错：', error);
   } finally {
-    await page.close();
-    await browser.close();
+    await pageFactory.closeBrowser();
   }
 }
