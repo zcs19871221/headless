@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { write } from '../default_openId';
+import { write } from '../../utils/default_openId';
 import Logger from 'better-loger';
 
 (function setDefaultOpenIdFromCmd() {

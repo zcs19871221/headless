@@ -2,7 +2,7 @@ import os from 'os';
 import path from 'path';
 import { writeFileSync, existsSync } from 'better-fs';
 import Logger from 'better-loger';
-import read_config_file from '../utils/read_config_file';
+import read_config_file from './read_config_file';
 
 const defaultOpenIdLocate = path.join(os.homedir(), '.openid');
 
