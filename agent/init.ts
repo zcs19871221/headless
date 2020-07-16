@@ -14,7 +14,7 @@ export default async function init(dir: string) {
       'utf-8',
     );
     await fs.writeFile(
-      path.join(__dirname, 'inject_script.js'),
+      path.join(dir, workDir, 'inject_script.js'),
       file.replace('TO_REPLACE', configPath),
     );
   }
