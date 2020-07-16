@@ -1,12 +1,16 @@
 (function() {
+  const port = 9091;
   const replace = (function init(open, fetch, send) {
     const CONFIG_PATH = 'TO_REPLACE';
     const HEAD_KEY = '__config';
     const changeUrl = (url: any) => {
+      if (url.startsWith('/')) {
+        url = window.location.protocol + '//' + window.location.host + url;
+      }
       url = new URL(url);
       url.protocol = 'http:';
       url.hostname = 'localhost';
-      url.port = '9091';
+      url.port = port;
       return url.toString();
     };
     return () => {
@@ -44,7 +48,7 @@
     window.XMLHttpRequest.prototype.send,
   );
   const xhr = new XMLHttpRequest();
-  xhr.open('get', 'http://localhost:9494/__isAlive');
+  xhr.open('get', `http://localhost:${port}/__isAlive`);
   xhr.addEventListener('load', () => {
     if (xhr.response === 'agent_alive') {
       replace();

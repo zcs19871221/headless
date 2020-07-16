@@ -11,51 +11,54 @@ export default async function proxy({
   res,
   config,
   target,
-  port,
   body,
 }: {
   req: IncomingMessage;
   res: ServerResponse;
   config: Config;
-  target: string;
-  port: number;
+  target: URL;
   body: Buffer;
 }) {
   const headers = req.headers;
   delete headers.host;
-  headers.origin = target;
+  delete headers['accept-encoding'];
+  headers.origin = target.protocol + '//' + target.host;
   if (headers.referer) {
-    const referUrl = url.parse(headers.referer);
-    const { protocol, port, hostname } = url.parse(target);
-    referUrl.protocol = protocol;
-    referUrl.port = port;
-    referUrl.hostname = hostname;
+    const referUrl = new URL(headers.referer);
+    referUrl.protocol = target.protocol;
+    referUrl.port = target.port;
+    referUrl.hostname = target.hostname;
     headers.referer = url.format(referUrl);
   }
-  const { username, pwd } = <any>{
+  const { user, pwd } = <any>{
     ...readDefaultOpenId(),
     ...readConfigFile([config.openId]),
   };
   let cookie = config.cookie;
+  const loginUrl = target.toString();
   if (!cookie) {
-    cookie = await cookieObj.get(target, username, pwd);
+    cookie = await cookieObj.get(loginUrl, user, pwd);
   }
 
   headers.cookie = cookie;
-
+  target.pathname = <string>req.url;
   const request = new Request({
-    url: <any>req.url?.replace(`http://localhost:${port}`, target),
+    url: target,
     method: <any>req.method,
     header: <any>headers,
-    responseHandlers: async (res, controler) => {
-      if (config.isCookieOutDate(res)) {
-        const newCookie = await cookieObj.get(target, username, pwd);
-        controler.param.setHeader('cookie', newCookie);
-        throw new Error('cookie过期');
-      }
-    },
+    responseHandlers: [
+      'decode',
+      async (res, controler) => {
+        if (config.isCookieOutDate(res)) {
+          const newCookie = await cookieObj.get(loginUrl, user, pwd);
+          controler.param.setHeader('cookie', newCookie);
+          throw new Error('cookie过期');
+        }
+        return res;
+      },
+    ],
   });
-  const response = await request.fetch(body);
+  const response = await request.fetch(body.length === 0 ? null : body);
   const header = request.fetcher.getResHeader();
   res.writeHead(200, {
     ...header,

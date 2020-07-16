@@ -6,7 +6,9 @@ export default async function init(dir: string) {
   const configName = 'config.js';
   const mockDir = 'mock';
   if (await fs.isExist(dir)) {
-    const configPath = path.join(__dirname, 'config.js');
+    const configPath = path
+      .normalize(path.join(__dirname, 'config.js'))
+      .replace(/\\/g, '\\\\');
     await fs.copy(configPath, path.join(dir, workDir, configName));
     await fs.ensureMkdir(path.join(dir, workDir, mockDir));
     const file = await fs.readFile(

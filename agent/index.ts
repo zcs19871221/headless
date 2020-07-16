@@ -1,4 +1,5 @@
 import http from 'http';
+import path from 'path';
 import Config from './index.d';
 import handleMock from './handle_mock';
 import proxy from './proxy';
@@ -24,9 +25,14 @@ const server = async (port: number = 9091) => {
       try {
         const configLocate = <string>req.headers.__config;
         delete req.headers.__config;
-        const config = <Config>require(configLocate);
+        delete require.cache[require.resolve(configLocate)];
+        const config = <Config>require(configLocate).default;
 
-        const mockRes = await handleMock(req, config);
+        const mockRes = await handleMock(
+          req,
+          config,
+          path.dirname(configLocate),
+        );
         if (mockRes !== null) {
           return response(mockRes);
         }
@@ -36,10 +42,10 @@ const server = async (port: number = 9091) => {
         if (!targetGroup) {
           throw new Error('current不匹配');
         }
-        const target = targetGroup[1];
+        const target = new URL(targetGroup[1]);
         const body = <any>await getBody(req);
 
-        await proxy({ req, res, config, target, port, body });
+        await proxy({ req, res, config, target, body });
         console.log(req.method, req.url, '成功');
       } catch (error) {
         console.log(req.method, req.url, '失败', error);
