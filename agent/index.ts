@@ -1,10 +1,10 @@
 import http from 'http';
-import getCookie from './getCookie';
-import Config from './config';
-import handleMock from './handleMock';
+import Config from './index.d';
+import handleMock from './handle_mock';
 import proxy from './proxy';
+import getBody from './get_body';
 
-const create = async (port: number) => {
+const server = async (port: number = 9091) => {
   http
     .createServer(async (req, res) => {
       const response = (body: string) => {
@@ -15,6 +15,9 @@ const create = async (port: number) => {
         });
         res.end(body);
       };
+      if (req.url === '/__isAlive') {
+        return response('agent_alive');
+      }
       if (req.method?.toUpperCase() === 'OPTIONS') {
         return response('');
       }
@@ -34,14 +37,18 @@ const create = async (port: number) => {
           throw new Error('current不匹配');
         }
         const target = targetGroup[1];
-        const cookie = await getCookie(config, target);
-        await proxy({ req, res, config, target, cookie, port });
+        const body = <any>await getBody(req);
+
+        await proxy({ req, res, config, target, port, body });
         console.log(req.method, req.url, '成功');
       } catch (error) {
         console.log(req.method, req.url, '失败', error);
       }
     })
-    .listen(port);
+    .listen(port, () => {
+      console.log('服务启动在http://localhost:9091');
+    });
 };
 
-export default create;
+export default server;
+server();

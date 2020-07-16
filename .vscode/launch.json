@@ -18,6 +18,7 @@
       "program": "${file}",
       "preLaunchTask": "compile",
       "outFiles": ["${workspaceFolder}/dist/**/*.js"],
+      "cwd": "${workspaceFolder}",
       "skipFiles": ["<node_internals>/**"]
     },
     {

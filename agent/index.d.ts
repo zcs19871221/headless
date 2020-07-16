@@ -1,4 +1,4 @@
-interface Config {
+export default interface Config {
   target: [string, string][];
   match: [RegExp, string][];
   current: string;
@@ -9,4 +9,3 @@ interface Config {
   openId: string;
   isCookieOutDate: (response: string) => boolean;
 }
-export default Config;

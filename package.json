@@ -9,13 +9,15 @@
     "better-fs": "^11.0.4",
     "better-inject": "^1.2.1",
     "better-loger": "^1.0.8",
-    "better-request": "^3.0.0",
+    "better-request": "^3.0.1",
     "better-utils": "^3.0.5",
     "puppeteer": "^3.0.4"
   },
   "bin": {
     "deployNoah": "./noah/bin/run.js",
-    "openid": "./noah/bin/set_openid.js"
+    "openid": "./noah/bin/set_openid.js",
+    "server": "./agent/bin/server.js",
+    "local": "./agent/bin/local.js"
   },
   "scripts": {
     "compile": "tsc",

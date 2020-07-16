@@ -1,8 +1,8 @@
 import path from 'path';
 import url from 'url';
 import querystring from 'querystring';
-import { IncomingMessage, ServerResponse } from 'http';
-import Config from './config';
+import { IncomingMessage } from 'http';
+import Config from './index.d';
 
 const handleMock = async (
   req: IncomingMessage,

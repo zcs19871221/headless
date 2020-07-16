@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   // 代理目标
   target: [
     // 0位置代表目标id，作用于matcher和current
